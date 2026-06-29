@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Estimador de precio de ventas</title>
+  <title>Estimador de precio de venta</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -14,10 +14,10 @@
       padding: 2rem 1rem;
     }
     .card {
-      max-width: 620px;
+      max-width: 680px;
       margin: 0 auto;
       background: #1e293b;
-      border-radius: 16px;
+      border-radius: 8px;
       padding: 2rem;
       box-shadow: 0 10px 30px rgba(0,0,0,.4);
     }
@@ -47,10 +47,25 @@
       cursor: pointer;
     }
     button:hover { background: #2563eb; }
+    .readonly-value {
+      width: 100%;
+      padding: .75rem;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #111827;
+      color: #93c5fd;
+      font-size: .95rem;
+      font-weight: 700;
+    }
+    .hint {
+      margin-top: .3rem;
+      color: #94a3b8;
+      font-size: .75rem;
+    }
     .result {
       margin-top: 1.5rem;
       padding: 1.25rem;
-      border-radius: 12px;
+      border-radius: 8px;
       background: #064e3b;
       border: 1px solid #10b981;
       text-align: center;
@@ -64,71 +79,77 @@
       border: 1px solid #ef4444;
       font-size: .9rem;
     }
-    .readonly-value {
-      width: 100%;
-      padding: .6rem .7rem;
-      border-radius: 8px;
-      border: 1px solid #334155;
-      background: #111827;
-      color: #93c5fd;
-      font-size: .95rem;
-      font-weight: 700;
-    }
-    .hint {
-      margin-top: .3rem;
-      color: #94a3b8;
-      font-size: .75rem;
+    @media (max-width: 640px) {
+      .grid { grid-template-columns: 1fr; }
+      .card { padding: 1.25rem; }
     }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>Estimador de precio de ventasssssss</h1>
+    <h1>Estimador de precio de venta</h1>
     <p class="sub">Random Forest &middot; predice <code>sellingprice</code></p>
 
     <form method="POST">
       <div class="grid">
         <div>
           <label>Marca (make)</label>
-          <select name="make" id="make" required>
-            {% for m in makes %}
-            <option value="{{ m }}" {{ 'selected' if valores.get('make') == m }}>{{ m }}</option>
+          <select name="make" required>
+            {% for make in makes %}
+            <option value="{{ make }}" {{ 'selected' if valores.get('make') == make }}>{{ make }}</option>
             {% endfor %}
           </select>
         </div>
+
+        <div>
+          <label>Modelo (model)</label>
+          <input list="modelos" name="model" value="{{ valores.get('model', '') }}" required>
+          <datalist id="modelos">
+            {% for model in models %}
+            <option value="{{ model }}"></option>
+            {% endfor %}
+          </datalist>
+        </div>
+
         <div>
           <label>Carroceria (body)</label>
-          <select name="body" id="body" required>
-            {% for b in bodies %}
-            <option value="{{ b }}" {{ 'selected' if valores.get('body') == b }}>{{ b }}</option>
+          <select name="body" required>
+            {% for body in bodies %}
+            <option value="{{ body }}" {{ 'selected' if valores.get('body') == body }}>{{ body }}</option>
             {% endfor %}
           </select>
         </div>
+
         <div>
           <label>Transmision</label>
-          <select name="transmission" id="transmission" required>
-            {% for t in transmissions %}
-            <option value="{{ t }}" {{ 'selected' if valores.get('transmission') == t }}>{{ t }}</option>
+          <select name="transmission" required>
+            {% for transmission in transmissions %}
+            <option value="{{ transmission }}" {{ 'selected' if valores.get('transmission') == transmission }}>{{ transmission }}</option>
             {% endfor %}
           </select>
         </div>
+
         <div>
-          <label>Año (year)</label>
-          <input type="number" name="year" id="year" min="1900" max="2025" value="{{ valores.get('year', 2015) }}" required>
+          <label>Anio (year)</label>
+          <input type="number" name="year" min="1900" max="2026" value="{{ valores.get('year', 2015) }}" required>
         </div>
+
         <div>
           <label>Condicion (1 - 49)</label>
-          <input type="number" name="condition" id="condition" step="0.1" min="1" max="49" value="{{ valores.get('condition', 30) }}" required>
+          <input type="number" name="condition" step="0.1" min="1" max="49" value="{{ valores.get('condition', 30) }}" required>
         </div>
+
         <div>
           <label>Kilometraje (odometer)</label>
-          <input type="number" name="odometer" id="odometer" step="1" min="0" value="{{ valores.get('odometer', 50000) }}" required>
+          <input type="number" name="odometer" step="1" min="0" value="{{ valores.get('odometer', 50000) }}" required>
         </div>
+
         <div>
           <label>MMR (valor de mercado)</label>
-          <div class="readonly-value" id="mmr-display">${{ "{:,.0f}".format(valores.get('mmr', 15000)) }}</div>
-          <div class="hint">Se calcula automaticamente segun los datos del auto.</div>
+          <div class="readonly-value">MMR estimado automaticamente: ${{ "{:,.0f}".format(valores.get('mmr', 0)) }} USD</div>
+          <div class="hint">Se busca en <code>mmr_lookup.csv</code> segun los datos del vehiculo.</div>
         </div>
+
         <button type="submit">Estimar precio</button>
       </div>
     </form>
@@ -136,7 +157,7 @@
     {% if prediccion is not none %}
     <div class="result">
       <div>Precio estimado de venta</div>
-      <div class="price">${{ "{:,.0f}".format(prediccion) }}</div>
+      <div class="price">${{ "{:,.0f}".format(prediccion) }} USD</div>
     </div>
     {% endif %}
 
@@ -144,45 +165,5 @@
     <div class="error">{{ error }}</div>
     {% endif %}
   </div>
-
-  <script>
-    function estimateMmr() {
-      const year = Number(document.getElementById("year").value) || 2015;
-      const condition = Number(document.getElementById("condition").value) || 30;
-      const odometer = Number(document.getElementById("odometer").value) || 0;
-      const make = document.getElementById("make").value.toLowerCase();
-      const body = document.getElementById("body").value.toLowerCase();
-      const transmission = document.getElementById("transmission").value.toLowerCase();
-
-      let mmr = 32000 - (Math.max(0, 2026 - year) * 1500);
-      mmr += (condition - 25) * 280;
-      mmr -= odometer * 0.055;
-
-      if (transmission === "automatic") mmr += 900;
-
-      if (body.includes("suv")) mmr += 2200;
-      else if (body.includes("sedan")) mmr += 600;
-      else if (body.includes("truck") || body.includes("pickup")) mmr += 2800;
-      else if (body.includes("hatch")) mmr -= 300;
-
-      if (["bmw", "mercedes-benz", "audi", "lexus", "infiniti", "acura", "cadillac"].includes(make)) {
-        mmr += 5000;
-      } else if (["toyota", "honda", "subaru"].includes(make)) {
-        mmr += 1800;
-      } else if (["kia", "hyundai", "chevrolet", "ford", "nissan"].includes(make)) {
-        mmr += 700;
-      }
-
-      mmr = Math.max(1000, Math.round(mmr));
-      document.getElementById("mmr-display").textContent = "$" + mmr.toLocaleString("en-US");
-    }
-
-    ["make", "body", "transmission", "year", "condition", "odometer"].forEach((id) => {
-      document.getElementById(id).addEventListener("input", estimateMmr);
-      document.getElementById(id).addEventListener("change", estimateMmr);
-    });
-
-    estimateMmr();
-  </script>
 </body>
 </html>
