@@ -6,7 +6,7 @@ import pandas as pd
 from flask import Flask, render_template, request
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, "modelo_random_forest_sellingprice.pkl")
+MODEL_PATH = os.path.join(BASE_DIR, "modelo_sellingprice_web.pkl")
 
 app = Flask(__name__)
 
