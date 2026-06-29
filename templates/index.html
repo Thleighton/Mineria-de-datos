@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estimador de precio de venta</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      margin: 0;
+      padding: 2rem 1rem;
+    }
+    .card {
+      max-width: 620px;
+      margin: 0 auto;
+      background: #1e293b;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,.4);
+    }
+    h1 { margin: 0 0 .25rem; font-size: 1.5rem; }
+    p.sub { margin: 0 0 1.5rem; color: #94a3b8; font-size: .9rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    label { display: block; font-size: .8rem; color: #cbd5e1; margin-bottom: .35rem; }
+    input, select {
+      width: 100%;
+      padding: .6rem .7rem;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-size: .95rem;
+    }
+    button {
+      grid-column: 1 / -1;
+      margin-top: .5rem;
+      padding: .8rem;
+      border: 0;
+      border-radius: 8px;
+      background: #3b82f6;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { background: #2563eb; }
+    .result {
+      margin-top: 1.5rem;
+      padding: 1.25rem;
+      border-radius: 12px;
+      background: #064e3b;
+      border: 1px solid #10b981;
+      text-align: center;
+    }
+    .result .price { font-size: 2rem; font-weight: 700; color: #6ee7b7; }
+    .error {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      border-radius: 8px;
+      background: #7f1d1d;
+      border: 1px solid #ef4444;
+      font-size: .9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Estimador de precio de venta</h1>
+    <p class="sub">Random Forest &middot; predice <code>sellingprice</code></p>
+
+    <form method="POST">
+      <div class="grid">
+        <div>
+          <label>Marca (make)</label>
+          <select name="make" required>
+            {% for m in makes %}
+            <option value="{{ m }}" {{ 'selected' if valores.get('make') == m }}>{{ m }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label>Carroceria (body)</label>
+          <select name="body" required>
+            {% for b in bodies %}
+            <option value="{{ b }}" {{ 'selected' if valores.get('body') == b }}>{{ b }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label>Transmision</label>
+          <select name="transmission" required>
+            {% for t in transmissions %}
+            <option value="{{ t }}" {{ 'selected' if valores.get('transmission') == t }}>{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label>Año (year)</label>
+          <input type="number" name="year" min="1900" max="2025" value="{{ valores.get('year', 2015) }}" required>
+        </div>
+        <div>
+          <label>Condicion (1 - 49)</label>
+          <input type="number" name="condition" step="0.1" min="1" max="49" value="{{ valores.get('condition', 30) }}" required>
+        </div>
+        <div>
+          <label>Kilometraje (odometer)</label>
+          <input type="number" name="odometer" step="1" min="0" value="{{ valores.get('odometer', 50000) }}" required>
+        </div>
+        <div>
+          <label>MMR (valor de mercado)</label>
+          <input type="number" name="mmr" step="1" min="0" value="{{ valores.get('mmr', 15000) }}" required>
+        </div>
+        <button type="submit">Estimar precio</button>
+      </div>
+    </form>
+
+    {% if prediccion is not none %}
+    <div class="result">
+      <div>Precio estimado de venta</div>
+      <div class="price">${{ "{:,.0f}".format(prediccion) }}</div>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+  </div>
+</body>
+</html>
