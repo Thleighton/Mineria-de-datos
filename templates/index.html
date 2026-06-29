@@ -64,21 +64,6 @@
       border: 1px solid #ef4444;
       font-size: .9rem;
     }
-    .readonly-value {
-      width: 100%;
-      padding: .6rem .7rem;
-      border-radius: 8px;
-      border: 1px solid #334155;
-      background: #111827;
-      color: #93c5fd;
-      font-size: .95rem;
-      font-weight: 700;
-    }
-    .hint {
-      margin-top: .3rem;
-      color: #94a3b8;
-      font-size: .75rem;
-    }
   </style>
 </head>
 <body>
@@ -126,8 +111,7 @@
         </div>
         <div>
           <label>MMR (valor de mercado)</label>
-          <div class="readonly-value">${{ "{:,.0f}".format(valores.get('mmr', 15000)) }}</div>
-          <div class="hint">Se calcula automaticamente con los datos ingresados.</div>
+          <input type="number" name="mmr" step="1" min="0" value="{{ valores.get('mmr', 15000) }}" required>
         </div>
         <button type="submit">Estimar precio</button>
       </div>

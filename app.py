@@ -21,61 +21,23 @@ MAKES, BODIES, TRANSMISSIONS = (list(c) for c in ohe.categories_)
 FEATURES = ["year", "condition", "odometer", "mmr", "make", "body", "transmission"]
 
 
-def estimar_mmr(valores):
-    antiguedad = max(0, 2026 - valores["year"])
-    base = 32000 - (antiguedad * 1500)
-    base += (valores["condition"] - 25) * 280
-    base -= valores["odometer"] * 0.055
-
-    if valores["transmission"].lower() == "automatic":
-        base += 900
-
-    body = valores["body"].lower()
-    if "suv" in body:
-        base += 2200
-    elif "sedan" in body:
-        base += 600
-    elif "truck" in body or "pickup" in body:
-        base += 2800
-    elif "hatch" in body:
-        base -= 300
-
-    make = valores["make"].lower()
-    if make in {"bmw", "mercedes-benz", "audi", "lexus", "infiniti", "acura", "cadillac"}:
-        base += 5000
-    elif make in {"toyota", "honda", "subaru"}:
-        base += 1800
-    elif make in {"kia", "hyundai", "chevrolet", "ford", "nissan"}:
-        base += 700
-
-    return round(max(1000, base))
-
-
 @app.route("/", methods=["GET", "POST"])
 def index():
     prediccion = None
     error = None
-    valores = {
-        "year": 2015,
-        "condition": 30,
-        "odometer": 50000,
-        "make": MAKES[0],
-        "body": BODIES[0],
-        "transmission": TRANSMISSIONS[0],
-    }
-    valores["mmr"] = estimar_mmr(valores)
+    valores = {}
 
     if request.method == "POST":
         try:
-            valores.update({
+            valores = {
                 "year": int(request.form["year"]),
                 "condition": float(request.form["condition"]),
                 "odometer": float(request.form["odometer"]),
+                "mmr": float(request.form["mmr"]),
                 "make": request.form["make"],
                 "body": request.form["body"],
                 "transmission": request.form["transmission"],
-            })
-            valores["mmr"] = estimar_mmr(valores)
+            }
             X = pd.DataFrame([[valores[f] for f in FEATURES]], columns=FEATURES)
             prediccion = float(modelo.predict(X)[0])
         except (ValueError, KeyError):
